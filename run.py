@@ -462,7 +462,7 @@ def get_webrtc_version_info(version_info: VersionInfo):
         revision = version_info.webrtc_commit
         maint = version_info.webrtc_build_version.split('.')[3]
     else:
-        # HEAD ビルドだと正しくバージョンが取れないので、その場合は適当に空文字を入れておく
+        # 如果是HEAD build的话，就无法得到正确的版本，这时可以适当地加入空字。
         branch = ''
         commit = ''
         revision = ''
@@ -487,11 +487,11 @@ def build_webrtc_ios(
     mkdir_p(webrtc_build_dir)
 
     mkdir_p(os.path.join(webrtc_build_dir, 'framework'))
-    # - M92-M93 あたりで clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode
-    #   がでていたので use_xcode_clang=false をすることで修正
-    # - M94 で use_xcode_clang=true かつ --bitcode を有効にしてビルドが通り bitcode が有効になってることを確認
-    # - M95 で再度 clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode エラーがでるようになった
-    # - https://webrtc-review.googlesource.com/c/src/+/232600 が影響している可能性があるため use_lld=false を追加
+    # - M92-M93 不支持 clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode
+    #   通过使用use_xcode_clang=false来修正
+    # - M94 use_xcode_clang=true并且启用--bitcode，构建通过，确认bitcode已启用
+    # - M95 中再次出现clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode错误
+    # - https://webrtc-review.googlesource.com/c/src/+/232600 由于可能影响，添加use_lld=false
     gn_args_base = [
         'rtc_libvpx_build_vp9=true',
         'enable_dsyms=true',
@@ -502,7 +502,7 @@ def build_webrtc_ios(
         *COMMON_GN_ARGS,
     ]
 
-    # WebRTC.xcframework のビルド
+    # WebRTC.xcframework 的构建
     if not nobuild_framework:
         gn_args = [
             *gn_args_base,
@@ -582,7 +582,7 @@ def build_webrtc_android(
 
     mkdir_p(webrtc_build_dir)
 
-    # Java ファイル作成
+    # Java文件制作
     branch, commit, revision, maint = get_webrtc_version_info(version_info)
     name = 'WebrtcBuildVersion'
     lines = []
@@ -646,7 +646,7 @@ def build_webrtc(
 
     mkdir_p(webrtc_build_dir)
 
-    # ビルド
+    # 构建
     if gen_force:
         rm_rf(webrtc_build_dir)
     if not os.path.exists(os.path.join(webrtc_build_dir, 'args.gn')) or gen:
@@ -719,11 +719,11 @@ def build_webrtc(
     else:
         ar = os.path.join(webrtc_src_dir, 'third_party/llvm-build/Release+Asserts/bin/llvm-ar')
 
-    # ar で libwebrtc.a を生成する
+    # 用ar生成libwebrtc.a
     if target not in ['windows_x86_64', 'windows_arm64']:
         archive_objects(ar, os.path.join(webrtc_build_dir, 'obj'), os.path.join(webrtc_build_dir, 'libwebrtc.a'))
 
-    # macOS の場合は WebRTC.framework に追加情報を入れる
+    # macOS的情况下，在WebRTC.framework中加入追加信息
     if (target in ('macos_arm64',)) and not nobuild_macos_framework:
         branch, commit, revision, maint = get_webrtc_version_info(version_info)
         info = {}
@@ -734,7 +734,7 @@ def build_webrtc(
         with open(os.path.join(webrtc_build_dir, 'WebRTC.framework', 'Resources', 'build_info.json'), 'w') as f:
             f.write(json.dumps(info, indent=4))
 
-        # Info.plistの編集(tools_wertc/ios/build_ios_libs.py内の処理を踏襲)
+        # Info.plist的编辑(沿用tools_wertc/ios/build_ios_libs.py中的处理)
         info_plist_path = os.path.join(webrtc_build_dir, 'WebRTC.framework', 'Resources', 'Info.plist')
         ver = cmdcap(['/usr/libexec/PlistBuddy', '-c', 'Print :CFBundleShortVersionString', info_plist_path],
                      resolve=False)
@@ -742,7 +742,7 @@ def build_webrtc(
             f'Set :CFBundleVersion {ver}.0', info_plist_path], resolve=False, encoding='utf-8')
         cmd(['plutil', '-convert', 'binary1', info_plist_path])
 
-        # xcframeworkの作成
+        # xcframework的制作
         rm_rf(os.path.join(webrtc_build_dir, 'WebRTC.xcframework'))
         cmd(['xcodebuild', '-create-xcframework',
             '-framework', os.path.join(webrtc_build_dir, 'WebRTC.framework'),
@@ -752,7 +752,7 @@ def build_webrtc(
 
 def copy_headers(webrtc_src_dir, webrtc_package_dir, target):
     if target in ['windows_x86_64', 'windows_arm64']:
-        # robocopy の戻り値は特殊なので、check=False にしてうまくエラーハンドリングする
+        # 因为robocopy的返回值是特殊的，所以check=False，然后处理错误
         # https://docs.microsoft.com/ja-jp/troubleshoot/windows-server/backup-and-storage/return-codes-used-robocopy-utility
         r = cmd(['robocopy', webrtc_src_dir, os.path.join(webrtc_package_dir, 'include'),
                 '*.h', '*.hpp', '/S', '/NP', '/NFL', '/NDL'], check=False)
@@ -814,7 +814,7 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
     rm_rf(webrtc_package_dir)
     mkdir_p(webrtc_package_dir)
 
-    # ライセンス生成
+    # 许可证生成
     if target == 'android':
         dirs = []
         for arch in ANDROID_ARCHS:

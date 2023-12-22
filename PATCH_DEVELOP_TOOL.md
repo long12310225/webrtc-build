@@ -75,12 +75,12 @@ src/
 #### 不打补丁就进行构建
 
 创建项目目录后，不用打补丁就可以构建。通过这个构建获取libwebrtc的源代码，进行挂机的执行和构建文件的生成等，为补丁的开发提供必要的环境。
-ビルドが必要なければ `--nobuild` オプションを指定してください。
+如果不需要构建，请指定`--nobuild`选项。
 
 
-## 設定ファイルを編集する
+## 编辑设置文件
 
-`config.json` を編集し、編集するソースコードを指定します。以下に設定例を示します:
+编辑`config.json`，并指定要编辑的源代码。下面是一个设置示例:
 
 ```
 {
@@ -100,7 +100,7 @@ src/
         "sdk/objc/components/video_codec/RTCVideoEncoderFactorySimulcast.mm"
     ],
 
-    # JNI 用の設定。必要ない場合は無視してください。
+    # JNI用的设定。没有必要的话请无视。
     "jni_classpaths": ["sdk/android/api"],
     "jni_classes": {
         "org.webrtc.Example": "sdk/android/src/jni/example.h"
@@ -108,23 +108,23 @@ src/
 }
 ```
 
-- `output`: パッチファイル名を指定します。このファイルは `make patch` で作成されます。
-- `platform`: プラットフォームを指定します。この値は libwebrtc のソースコードのパス (`_source`) とビルド時のオプション (`run.py`) に使用されます。
-- `build_flags`: `run.py` に渡すオプションを指定します。
-- `sources`: 編集するソースコードのパスを指定します。
-- `jni_classpaths`, `jni_classes`: JNI 用の設定です。後述します。
+- `output`: 指定补丁文件名。这个文件是用‘make patch’制作的。
+- `platform`: 指定平台。这个值用于libwebrtc的源代码路径(`_source`)和构建时的选项(`run.py`)。
+- `build_flags`: `run.py` 指定要提交的选项。
+- `sources`: 指定要编辑的源代码的路径。
+- `jni_classpaths`, `jni_classes`: 是JNI用的设定。后面会讲到。
 
 
-### パッチを適用せずにビルドする (オプション)
+### 不打补丁就构建(可选)
 
-libwebrtc のソースコードには、ビルド時 (またはフェッチ時) に生成されるファイルがあります。編集するソースコードが自動的に生成されるファイルである場合、パッチを適用せずにビルドしておく必要があります。 libwebrtc のリポジトリをダウンロードし直した場合も同様です。
+在libwebrtc的源代码中，有在建立(或取回)时生成的文件。如果你要编辑的源代码是自动生成的文件，那么你需要在不打补丁的情况下构建它。重新下载libwebrtc的仓库时也是一样。
 
-パッチを適用せずにビルドするには、 `make build-skip-patch` を実行します。このコマンドは `config.json` の設定にしたがって `run.py` を実行します。ただし、 `config.json` で指定したパッチは無視します。
+想要在不打补丁的情况下构建，运行`make build-skip-patch`。这个命令根据`config.json`的设置执行`run.py`。但是，用`config.json`指定的补丁无视。
 
 
-### オリジナルのソースコードをコピーする
+### 复制实体的源代码
 
-設定ファイルを編集したら `make sync` を実行します。 `make sync` は設定ファイルに指定したソースコードを `src` にコピーします。前記の `config.json` の例だと、 `make sync` 実行後のディレクトリは次のようになります。
+编辑好设置文件后，运行' make sync '。`make sync`将配置文件中指定的源代码复制到`src`。以上述`config.json`为例，执行`make sync`后的目录如下所示。
 
 ```
 └── src
@@ -148,16 +148,15 @@ libwebrtc のソースコードには、ビルド時 (またはフェッチ時) 
                     └── RTCVideoEncoderFactorySimulcast.mm
 ```
 
-編集するソースコードを追加する場合は、 `config.json` を編集してソースコードのパスを追加してから再度 `make sync` を実行してください。 `make sync` は `src` 以下に存在しないファイルのみコピーします。
+添加要编辑的源代码时，请编辑`config.json`，添加源代码路径，然后再次执行`make sync`。`make sync`只复制`src`以下不存在的文件。
 
 
-#### JNI 用の C/C++ ヘッダーファイルを生成する (オプション)
+#### 生成JNI用的C/ c++头文件(可选)
 
-JNI 用のパッチを開発する場合は、 `javah` で C/C++ のヘッダーファイルを生成する必要があります。 `config.json` を編集して JNI の設定を記述し、 `make jni` を実行します。 `make jni` は `javah` を実行して C/C++ のヘッダーファイルを生成し、 `src` 以下に出力します。
+如果你要为JNI开发补丁，你需要用`javah`生成C/ c++的头文件。编辑`config.json`，描述JNI的设置，执行`make JNI`。`make jni`运行`javah`来生成C/ c++的头文件，并输出`src`以下。
+请事先在机器上安装`javah`。libwebrtc的源代码中包含用于构建的第三方工具，但不包含`javah`。
 
-`javah` は事前にマシンにインストールしておいてください。 libwebrtc のソースコードにはビルドに使われるサードパーティーのツールが含まれていますが、 `javah` は含まれていません。
-
-JNI 用の `config.json` の設定例を以下に示します:
+JNI `config.json`的设置示例如下:
 
 ```json
 {
@@ -170,48 +169,44 @@ JNI 用の `config.json` の設定例を以下に示します:
 }
 ```
 
-- `jni_classpaths`: クラスパス (`-classpath` オプション) のリストを指定します。指定したクラスパスは、 libwebrtc のソースコードのディレクトリに適用されます。上記の例だと、 `javah` に渡されるクラスパスは `../../_sources/sdk/android/api` (の絶対パス) になります。
-- `jni_classes`: ヘッダーファイルを生成するクラスと出力ファイルパスをペアで指定します。
+- `jni_classpaths`:指定类路径(`-classpath`选项)列表。指定的类路径将被应用到libwebrtc的源代码目录中。在上述例子中，传递到`javah`的类路径是`../ . ./_sources/sdk/android/api`(的绝对路径)。
+- `jni_classes`:配对指定生成头部文件的类和输出文件路径。
 
-上記の設定例では、 `make jni` で以下のコマンドが実行されます:
+在上面的示例设置中，在`make jni`中执行以下命令:
 
 ```
 javah -classpath TOP/_source/android/webrtc/src/sdk/android/api -o simulcast_video_encoder.h org.webrtc.SimulcastVideoEncoder
 ```
 
 
-### パッチを実装する
+### 安装补丁
 
-パッチの開発は `src` 以下のソースコードを編集してください。
+补丁的开发`src`请编辑以下的源代码。
 
-`make check` を実行すると、ファイル終端の改行の有無をチェックできます。ビルドやパッチ作成時は自動的にチェックしますが、手動でチェックする場合に使ってください。
-
-
-### ビルドする
-
-`make build` を実行すると、編集したソースコードを libwebrtc のソースコードのディレクトリにコピーしてから `run.py` でビルドします。以降の挙動は `run.py` と同じです。トップレベルの `_build` 以下にビルド結果が出力されます。
+执行`make check`可以检查文件末端是否换行。在构建和补丁的时候会自动检查，但是请在手动检查的时候使用。
 
 
-### パッチファイルを生成する
+### 建造
 
-`make patch` を実行すると、編集したソースコードとオリジナルのソースコードとの差分をまとめてパッチファイルを生成します。パッチファイルは `config.json` の `output` で指定したファイル名で `_build` 以下に出力されます。たとえば `output` に `ios_simulcast.patch` を指定すると、 `_build/ios_simulcast.patch` が生成されます。
+运行`make build`后，将编辑好的源代码复制到libwebrtc的源代码目录中，然后用`run.py`构建。之后的行为与`run.py`相同。在顶级的`_build`以下输出构建结果。
 
-パッチの開発が終わったら、生成したパッチファイルをトップレベルの `patches` にコピーしてください。
+### 生成补丁文件
 
-なお、編集したソースコードのファイルの終端が改行でない場合はエラーになります。ファイル終端に改行を追加してから再度 `make patch` を実行してください。
+运行`make patch`，它会生成一个补丁文件，汇总你编辑的源代码和原始源代码之间的差异。补丁文件在`config.json`的`output`中指定的文件名中`_build`以下输出。例如，在`output`中指定`ios_simulcast.patch`，就会生成`_build/ios_simulcast.patch`。
 
+补丁开发结束后，请将生成的补丁文件复制到顶层`patches`。
 
-### その他の操作
+另外，编辑的源代码文件的末端如果不是换行的话会出错。请在文件末端添加换行符之后再次执行`make patch`。
 
-#### 差分を表示する
+### 其他操作
 
-`make diff` を実行します。 `make diff` の挙動は、パッチファイルを生成する以外は `make patch` と同じです。
+#### 显示差分
 
+执行`make diff`。除了生成补丁文件之外，`make diff`的行为与`make patch`相同。
 
-#### オリジナルのソースコードに加えた変更を元に戻す
+#### 恢复对原始源代码的更改
 
-`make clean` を実行します。 `make build` の実行時にオリジナルのソースコードに加えた変更を元に戻します。
-
+执行`make clean`。恢复在运行`make build`时对原始源代码所做的改变。
 
 ## サブコマンド
 
