@@ -48,9 +48,9 @@ def cmd(args, **kwargs):
     return subprocess.run(args, **kwargs)
 
 
-# 標準出力をキャプチャするコマンド実行。シェルの `cmd ...` や $(cmd ...) と同じ
+# 执行捕获标准输出的命令。shell的`cmd…`和$(cmd…)一样
 def cmdcap(args, **kwargs):
-    # 3.7 でしか使えない
+    # 只能在3.7时使用
     # kwargs['capture_output'] = True
     kwargs['stdout'] = subprocess.PIPE
     kwargs['stderr'] = subprocess.PIPE
@@ -114,7 +114,7 @@ def download(url: str, output_dir: Optional[str] = None, filename: Optional[str]
         else:
             cmd(["wget", "-cO", output_path, url])
     except Exception:
-        # ゴミを残さないようにする
+        # 做到不留垃圾
         if os.path.exists(output_path):
             os.remove(output_path)
         raise
@@ -129,7 +129,7 @@ def read_version_file(path: str) -> Dict[str, str]:
     for line in lines:
         line = line.strip()
 
-        # コメント行
+        # 评论行
         if line[:1] == '#':
             continue
 
@@ -143,7 +143,7 @@ def read_version_file(path: str) -> Dict[str, str]:
     return versions
 
 
-# dir 以下にある全てのファイルパスを、dir2 からの相対パスで返す
+# 用来自dir2的相对路径返回dir以下的所有文件路径
 def enum_all_files(dir, dir2):
     for root, _, files in os.walk(dir):
         for file in files:

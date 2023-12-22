@@ -1,77 +1,77 @@
-# 開発者用ドキュメント
+# 开发者用文档
 
-## ローカルでのビルド
+## 本地构建
 
-`run.py` を利用すると、WebRTC をローカルでビルド可能になる。
+利用`run.py`，可以在本地构建WebRTC。
 
-以下のコマンドでビルドする
+用以下命令构建
 
 ```
 python3 run.py build <target>
 ```
 
-`<target>` の部分には、`windows` や `ubuntu-20.04_x86_64` 等のターゲット名が入る。
+`<target>` 的部分有`windows` や `ubuntu-20.04_x86_64` 等目标名称。
 
-詳細は `python3 run.py --help` や `python3 run.py build --help` 等を参照すること。
+详细情况参考 `python3 run.py --help` 或 `python3 run.py build --help` 。
 
-これで `_build` 以下のディレクトリに `libwebrtc.a` 等のライブラリが生成される。
+这样在`_build`以下目录中生成`libwebrtc.a`等库。
 
-初回の build コマンド実行時には、自動的に WebRTC のソースやツールのダウンロードやパッチの適用をした上でビルドされる。
+第一次执行build命令时，会自动下载WebRTC的源和工具，并在安装补丁后进行构建。
 
-2回目の build コマンドの実行時には、ビルドのみ行われる。WebRTC ソースの更新や、gn gen の再実行は行われない。
+第二次执行build命令时，只进行build。不更新WebRTC源，也不重新执行gn gen。
 
-もう少し細かく書くと、build コマンドをオプション引数無しで実行した場合、以下のことを行なっている。
+再详细一点，在没有选项参数的情况下执行build命令时，进行以下操作。
 
-- 必要な WebRTC のソースやツールが存在しない場合、ダウンロードしてから WebRTC ソースに時雨堂パッチを当てる
-- まだ ninja ファイルが存在しない場合、gn gen コマンドで ninja ファイルを生成する
-- ninja コマンドでビルドする
+- 如果没有需要的WebRTC源或工具，下载后给WebRTC源打上时雨堂补丁
+- 在尚未存在ninja文件的情况下，用gn gen命令生成ninja文件
+- 用ninja命令构建
 
-2回目の実行では WebRTC のソースやツールや、ninja ファイルが既に存在しているため取得・生成されず、単にビルドだけが行われる。
+在第二次执行中，WebRTC的源、工具和ninja文件已经存在，所以不进行获取和生成，只进行构建。
 
-WebRTC のソースを手で書き換えた場合は、単にもう一度 build コマンドを実行するだけで良い。
+手动重写WebRTC源时，只需再次执行build命令即可。
 
 ### --webrtc-fetch
 
-WebRTC のソースをリポジトリから取得し直したい場合は `--webrtc-fetch` 引数を利用すれば良い。
+如果想从资料库重新获取WebRTC的源`--WebRTC -fetch`自变量。
 
 ```
 python3 run.py build <target> --webrtc-fetch
 ```
 
-これで WebRTC のソースは `VERSION` ファイルの `WEBRTC_COMMIT` に書かれた内容になり、その上でパッチを当てた状態でビルドされる。
+这样WebRTC的源就变成了' VERSION '文件的' webrtc_commit '中所写的内容，然后在上面打补丁的状态下构建。
 
-ソースを手で書き換えた部分や追加したファイルも含め、全て元に戻るので注意すること。
+要注意的是，包括手动改写的部分和追加的文件在内，全部恢复原样。。
 
-なお既存のソースを全て破棄して取得し直す `--webrtc-fetch-force` 引数も存在する。
+另外也存在丢弃所有已有的源重新获取`--webrtc-fetch-force`自变量。
 
 ### --webrtc-gen
 
-同様に gn gen コマンドを実行し直したい場合は `--webrtc-gen` 引数を利用すれば良い。
+同样的，如果想重新执行gn gen命令的话，利用`--webrtc-gen`自变量就可以了。
 
 ```
 python3 run.py build <target> --webrtc-gen
 ```
 
-これで gn gen を実行し直した上でビルドされる。
+这样一来，在gn gen重新实行的基础上被构建。
 
-なお既存のビルドディレクトリを全て破棄して生成し直す `--webrtc-gen-force` 引数も存在する。
+另外，现有的构建目录全部废弃重新生成`--webrtc-gen-force`自变量也存在。
 
-### iOS, Android のビルド
+### iOS和Android的构建
 
-iOS の `WebRTC.xcframework`、Android の `webrtc.aar` は、他の場合と変わらず build コマンドで生成できる。
+iOS的`WebRTC.xcframework`， Android的`webrtc.aar `，和其他情况一样可以用build命令生成。
 
-ただし `--webrtc-gen` コマンドは効かず、常に gn gen が実行される。
+但是`--webrtc-gen `命令无效，总是gn gen被执行。
 
-また、iOS や Android の `libwebrtc.a` が欲しいだけの状況で `WebRTC.xcframework` や `webrtc.aar` が生成されるのは無駄なので、
-その場合は `--webrtc-nobuild-ios-framework` または `--webrtc-nobuild-android-aar` を利用すれば良い。
+另外，iOS和Android的`libwebrtc.a`只是想要的状况下，生成`WebRTC.xcframework`和`webrtc.aar`是徒劳的，
+这种情况使用`--webrtc-nobuild-ios-framework`或者`--webrtc-nobuild-android-aar`就可以了。
 
-### ディレクトリ構成
+### 目录结构
 
-- ソースは `_source` 以下に、ビルド成果物は `_build` 以下に配置される。
-- `_source/<target>/` や `_build/<target>/` のように、`_source` と `_build` のどちらも、ターゲットごとに別のディレクトリに分けられる。
-- `_build/<target>/<configuration>` のように、`_build` はデバッグビルドかリリースビルドかで別のディレクトリに分けられる。
+- 源配置在`_source`以下，构建成果配置在`_build`以下。
+- `_source/<target>/` 和 `_build/<target>/` 像这样`_source` 和`_build` 都可以根据目标分类到不同的目录。
+- `_build/<target>/<configuration>` 像这样`_build` 是调试构建还是发布构建，被分成不同的目录。
 
-つまりデフォルトでは以下のような配置になる。
+也就是说，默认情况下是这样的。。
 
 ```
 webrtc-build/
@@ -95,28 +95,28 @@ webrtc-build/
             `-- webrtc/...
 ```
 
-また、ソースディレクトリやビルドディレクトリは以下のオプションを指定することで任意の場所に変更できる。
+另外，可以通过指定以下的选项，将源目录和构建目录变更到任意的场所。。
 
-- `--source-dir`: ソースディレクトリ
-  - デフォルトは `<run.pyのあるディレクトリ>/_source/<target名>` 
-- `--webrtc-source-dir`: WebRTC のソースを配置するディレクトリ。`--source-dir` よりもこちらの設定を優先する。
-  - デフォルトは `<source-dir>/webrtc` 
-- `--build-dir`: ビルドディレクトリ
-  - デフォルトは `<run.pyのあるディレクトリ>/_build/<target名>/<configuration>` 
-- `--webrtc-build-dir`: WebRTC のビルド成果物を配置するディレクトリ。`--build-dir` よりもこちらの設定を優先する。
-  - デフォルトは `<build-dir>/webrtc` 
+- `--source-dir`: 源目录
+  - 默认是`<run.py的目录>/_source/<target名>`
+- `--webrtc-source-dir`: 配置WebRTC源的目录。`--source-dir` 优先设定自己的设定
+  - 默认是 `<source-dir>/webrtc`
+- `--build-dir`: 构建目录
+  - 默认是 `<run.py的目录>/_build/<target名>/<configuration>`
+- `--webrtc-build-dir`: 配置WebRTC构建成果的目录。`--build-dir` 优先设定自己的设定。
+  - 默认是 `<build-dir>/webrtc`
 
-これらのディレクトリは、カレントディレクトリからの相対パスで指定可能となっている。
+这些目录能够通过来自当前目录的相对路径来指定。
 
 ### 制限
 
-ローカルでのビルドは、以下の制限がある。
+本地构建有以下限制:
 
-- Windows の場合は `windows` ターゲットのみビルド可能。
-- macOS の場合は `macos_x86_64`, `macos_arm64`, `ios` ターゲットのみビルド可能。
-- Ubuntu の x86_64 環境の場合、上記以外のターゲットのみビルド可能。
-  - `android`, `raspberry-pi-os_armv*`, `ubuntu-*_armv8` あたりの ARM 環境は Ubuntu のバージョンに関係なくビルド可能
-  - `ubuntu-18.04_x86_64` の場合は Ubuntu 18.04 が必要
-  - `ubuntu-20.04_x86_64` の場合は Ubuntu 20.04 が必要
-- Ubuntu の x86_64 でない環境ではビルド不可能。
-- Ubuntu 以外の Linux 系 OS ではビルド不可能。
+- Windows的环境只有 `windows` 才能构建。
+- macOS 的环境只有 `macos_x86_64`, `macos_arm64`, `ios` 才能构建 。
+- Ubuntu 的 x86_64 环境以下都可以构建。
+  - `android`, `raspberry-pi-os_armv*`, `ubuntu-*_armv8` 无论Ubuntu版本，都可以构建ARM环境
+  - `ubuntu-18.04_x86_64` 需要 Ubuntu 18.04
+  - `ubuntu-20.04_x86_64` 需要 Ubuntu 20.04
+- 在非Ubuntu x86 64的环境下无法构建。
+- Ubuntu以外的Linux系统无法构建。

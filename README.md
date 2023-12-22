@@ -12,23 +12,23 @@ Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use
 
 ## 关于时雨堂的开源软件
 
-利用前に https://github.com/shiguredo/oss をお読みください。
+使用前请阅读<https://github.com/shiguredo/oss>
 
-## webrtc-build について
+## 关于webrtc-build
 
-様々な環境向けの WebRTC のビルドを行って、そのバイナリを提供しています。
+我们为各种环境构建WebRTC，提供二进制文件。
 
-## ダウンロード
+## 下载
 
-[リリース](https://github.com/melpon/webrtc-build/releases) からダウンロードしてください。
+[发布](https://github.com/melpon/webrtc-build/releases) 请从这里下载。
 
-## パッケージに入っている内容
+## 包装里的内容
 
-- WebRTC ライブラリ(webrtc.lib あるいは libwebrtc.a)
-- WebRTC のインクルードヘッダ
-- WebRTC のバージョン情報(コミットハッシュ)
+- WebRTC库(WebRTC .lib或libwebrtc.a)
+- WebRTC的头文件
+- WebRTC版本信息
 
-## 現在提供しているビルド
+## 现在提供的构建
 
 - windows_x86_64
 - windows_arm64
@@ -50,44 +50,44 @@ Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use
 - android_arm64
 - ios_arm64
 
-### hololens2 ビルドについて
+### hololens2关于构建
 
-- 対応ブランチは support/hololens2 です
-- 最新の libwebrtc 追従は有償で承っております
-- バグ修正は有償で承っております
+- 支持的分支是support/hololens2。
+- 最新的libwebrtc追随是有偿的
+- 修正错误是有偿的。
 
 ## 廃止
 
-- macOS x86_64 廃止
-  - 2022 年 6 月を持って廃止しました
-- Ubuntu 18.04 x86_64 廃止
-  - 2022 年 6 月を持って廃止しました
-- Jetson 向け ARM 版 Ubuntu 18.04 廃止
-  - 2023 年 4 月を持って廃止します
+- macOS x86_64 废除
+  - 到2022年6月，它被取消了。
+- Ubuntu 18.04 x86_64 废除
+  - 2022 年 6 月，它被取消了。
+- Jetson 向け ARM 版 Ubuntu 18.04 废除
+  - 2023 年 4 月，它被取消了。
 
-## H.264 (AVC) と H.265 (HEVC) のライセンスについて
+## H.264 (AVC)和H.265 (HEVC)许可证
 
-**時雨堂が提供する libwebrtc のビルド済みバイナリには H.264 と H.265 のコーデックは含まれていません**
+时雨堂提供的libwebrtc已构建二进制文件中不包含H.264和H.265编译码器。
 
 ### H.264
 
-H.264 対応は [Via LA Licensing](https://www.via-la.com/) (旧 MPEG-LA) に連絡を取り、ロイヤリティの対象にならないことを確認しています。
+H.264对应[Via LA Licensing](https://www.via-la.com/)(原MPEG-LA)取得联系，确认不成为专利费的对象。。
 
-> 時雨堂がエンドユーザーの PC /デバイスに既に存在する AVC / H.264 エンコーダー/デコーダーに依存する製品を提供する場合は、
-> ソフトウェア製品は AVC ライセンスの対象外となり、ロイヤリティの対象にもなりません。
+如果时雨堂提供依赖于终端用户的PC /设备中已有的AVC / H.264编码器/解码器的产品，
+软件产品不属于AVC授权的对象，也不属于专利费的对象。
 
 ### H.265
 
-H.265 対応は以下の二つの団体に連絡を取り、H.265 ハードウェアアクセラレーターのみを利用し、
-H.265 が利用可能なバイナリを配布する事は、ライセンスが不要であることを確認しています。
+H.265支持联系以下两个团体，仅利用H.265硬件加速器，
+正在确认H.265分发可利用的二进制的事，不需要许可证。
 
-また、H.265 のハードウェアアクセラレーターのみを利用した H.265 対応の SDK を OSS で公開し、
-ビルド済みバイナリを配布する事は、ライセンスが不要であることも確認しています。
+另外，在OSS中公开了仅使用H.265硬件加速器的支持H.265的SDK，
+分发已构建的二进制文件是不需要许可证的。
 
 - [Access Advance](https://accessadvance.com/ja/)
 - [Via LA Licensing](https://www.via-la.com/)
 
-## ライセンス
+## 许可证
 
 Apache License 2.0
 
@@ -108,39 +108,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
-
-### コントリビューター
-
-- melpon - _Original Author_
-  - Android サポート
-  - iOS サポート
-  - CentOS 8 サポート
-  - iOS / Android 認証付き HTTP Proxy サポート
-  - Ubuntu 22.04 x86_64 サポート
-  - Ubuntu 20.04 arm64 サポート
-- tnoho - _Original Author_
-  - macOS 向け AV1 サポート
-  - iOS / Android 向け H.265 サポート
-- hakobera
-  - Ubuntu 20.04 x86_64 サポート
-  - macOS 11 arm64 サポート
-- enm10k
-  - iOS 向けデバッグビルド追加
-- soudegesu
-  - macOS 向け ObjC ヘッダー追加
-
-## タグやブランチ運用について
-
-- feature/m94.4606 のようにブランチを切ります
-  - branch-heads のブランチは削除してはいけません
-  - 次のリリースブランチが決まるまでは feature 上でタグを打ちます
-- 次のリリースブランチが確定したら master にマージします
-  - ブランチから変更が無ければタグを打つ必要はありません
-- libwebrtc のコミットポジションは変更せずに何か変更がある場合は一番右の数値を増やします
-  - m94.4606.0.0 から m94.4606.0.1 のようにする
-
-## パッチ運用について
-
-- 最新版でパッチが動作しない場合はパッチ作成者が修正をしてください
-- 何かしらの理由でパッチ修正が難しい場合はパッチを削除します
-  - 時雨堂で必要と思ったパッチは時雨堂にて対応します
