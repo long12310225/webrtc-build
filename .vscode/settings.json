@@ -4,5 +4,6 @@
     "[python]": {
         "editor.formatOnSave": true,
         "editor.formatOnSaveMode": "file"
-    }
+    },
+    "svn.ignoreMissingSvnWarning": true
 }

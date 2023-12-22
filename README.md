@@ -10,7 +10,7 @@ We will not respond to PRs or issues that have not been discussed on Discord. Al
 
 Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use.
 
-## 時雨堂のオープンソースソフトウェアについて
+## 关于时雨堂的开源软件
 
 利用前に https://github.com/shiguredo/oss をお読みください。
 
