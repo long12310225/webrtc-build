@@ -10,7 +10,7 @@
 python3 run.py build <target>
 ```
 
-`<target>` 的部分有`windows` や `ubuntu-20.04_x86_64` 等目标名称。
+`<target>` 的部分有`windows` 或 `ubuntu-20.04_x86_64` 等目标名称。
 
 详细情况参考 `python3 run.py --help` 或 `python3 run.py build --help` 。
 
