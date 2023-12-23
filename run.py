@@ -841,16 +841,16 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
         *ts, webrtc_package_dir, *dirs])
     os.rename(os.path.join(webrtc_package_dir, 'LICENSE.md'), os.path.join(webrtc_package_dir, 'NOTICE'))
 
-    # ヘッダーファイルをコピー
+    # 复制标题文件
     copy_headers(webrtc_src_dir, webrtc_package_dir, target)
 
-    # バージョン情報
+    # 版本信息
     generate_version_info(webrtc_src_dir, webrtc_package_dir)
 
-    # 依存情報
+    # 依赖信息
     generate_deps_info(webrtc_src_dir, webrtc_package_dir)
 
-    # ライブラリ
+    # 库
     if target in ['windows_x86_64', 'windows_arm64']:
         files = [
             (['obj', 'webrtc.lib'], ['lib', 'webrtc.lib']),
@@ -866,7 +866,7 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
             (['framework', 'WebRTC.xcframework'], ['Frameworks', 'WebRTC.xcframework']),
         ]
     elif target == 'android':
-        # aar を展開して classes.jar を取り出す
+        # 展开aar，取出assas .jar
         tmp = os.path.join(webrtc_build_dir, 'tmp')
         rm_rf(tmp)
         mkdir_p(tmp)
@@ -941,13 +941,13 @@ def check_target(target):
         if os != 'Ubuntu':
             return False
 
-        # x86_64 環境以外ではビルド不可
+        # x86 64环境以外不可构建
         arch = platform.machine()
         logging.info(f'Arch: {arch}')
         if arch not in ('AMD64', 'x86_64'):
             return False
 
-        # クロスコンパイルなので Ubuntu だったら任意のバージョンでビルド可能（なはず）
+        # 因为是交叉编译，Ubuntu可以(应该)构建任何版本
         if target in ('ubuntu-18.04_armv8',
                       'ubuntu-20.04_armv8',
                       'raspberry-pi-os_armv6',
@@ -956,7 +956,7 @@ def check_target(target):
                       'android'):
             return True
 
-        # x86_64 用ビルドはバージョンが合っている必要がある
+        # x86 64用的build需要版本合适
         osver = release['VERSION_ID']
         logging.info(f'OS Version: {osver}')
         if target == 'ubuntu-20.04_x86_64' and osver == '20.04':
@@ -971,17 +971,17 @@ def check_target(target):
 
 def main():
     """
-    メモ
+    笔记
 
-    ビルド方針:
-        - 引数無しで実行した場合、ビルドのみ行う
-            - もし必要とするファイルが存在しなければ取得や生成を行うが、新しい更新があるかどうかは確認しない。
-        - 各種引数を渡すと、更新や生成を行う。
-            - fetch 系: 各種ソースを更新する
-            - fetch-force 系: 一旦全て削除してから取得し直す
-            - gen 系: 既存のビルドディレクトリの上に gn gen を行う
-            - gen-force 系: 既存のビルドディレクトリは完全に削除してから gn gen をやり直す
-            - nobuild 系: ビルドを行わない
+    构建方针:
+        -在没有自变量的情况下执行，只进行构建
+        -如果不存在需要的文件就进行获取和生成，但不确认是否有新的更新。
+        -传递各种参数后，进行更新和生成。
+        - fetch类:更新各种信源
+        - fetch-force系:先全部删除再重新获取
+        gen系统:在已有的构建目录上进行gn gen
+        - gen-force系:现有的构建目录完全删除，重新gn gen
+        - nobuild类:不进行构建
     """
     parser = argparse.ArgumentParser()
     sp = parser.add_subparsers()
@@ -1004,8 +1004,8 @@ def main():
     bp.add_argument("--webrtc-overlap-ios-build-dir", action='store_true')
     bp.add_argument("--webrtc-build-dir")
     bp.add_argument("--webrtc-source-dir")
-    # 現在 build と package を分ける意味は無いのだけど、
-    # 今後複数のビルドを纏めてパッケージングする時に備えて別コマンドにしておく
+    # 现在build和package已经没有分开的意义了，
+    # 在今后汇总多个构建进行包装时，预先设置成不同的指令。
     pp = sp.add_parser('package')
     pp.set_defaults(op='package')
     pp.add_argument("target", choices=TARGETS)
@@ -1046,7 +1046,7 @@ def main():
         webrtc_package_dir = os.path.abspath(args.webrtc_package_dir) if args.webrtc_package_dir is not None else None
 
     if args.target in ['windows_x86_64', 'windows_arm64']:
-        # Windows の WebRTC ビルドに必要な環境変数の設定
+        # 设置Windows WebRTC构建所需的环境变量
         mkdir_p(build_dir)
         download("https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe", build_dir)
         path = cmdcap([os.path.join(build_dir, 'vswhere.exe'), '-latest',
@@ -1087,12 +1087,12 @@ def main():
             if args.target in ['windows_x86_64', 'windows_arm64']:
                 cmd(['git', 'config', '--global', 'core.longpaths', 'true'])
 
-            # ソース取得
+            # 源获取
             get_webrtc(source_dir, patch_dir, version_info.webrtc_commit, args.target,
                        webrtc_source_dir=webrtc_source_dir,
                        fetch=args.webrtc_fetch, force=args.webrtc_fetch_force)
 
-            # ビルド
+            # 构建
             build_webrtc_args = {
                 'source_dir': source_dir,
                 'build_dir': build_dir,
@@ -1106,7 +1106,7 @@ def main():
                 'gen_force': args.webrtc_gen_force,
                 'nobuild': args.webrtc_nobuild,
             }
-            # iOS と Android は特殊すぎるので別枠行き
+            # iOS和Android太特殊了
             if args.target == 'ios':
                 build_webrtc_ios(**build_webrtc_args,
                                  nobuild_framework=args.webrtc_nobuild_ios_framework,
