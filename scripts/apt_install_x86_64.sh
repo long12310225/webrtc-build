@@ -2,31 +2,35 @@
 
 set -ex
 
-# grub-efi-amd64-signed がエラーになるので hold で回避する
-# ref: https://github.com/community/community/discussions/47863
-apt-mark hold grub-efi-amd64-signed
-apt-get update --fix-missing
-apt-get upgrade
+apt-get update
+apt-get -y upgrade
 
-# tzdata を noninteractive にしないと実行が止まってしまう
+# Ubuntu 18.04 では tzdata を noninteractive にしないと実行が止まってしまう
 apt-get -y install tzdata
 echo 'Asia/Tokyo' > /etc/timezone
 dpkg-reconfigure -f noninteractive tzdata
+
+# Ubuntu 20.04 では libwebrtc の install-build-deps.sh で snapcraft がインストールされるが、
+# コンテナ内では snapd が動かないためインストールに失敗するので、失敗したときに "Skip" をデフォルト値として設定しておかないと実行が止まってしまう。
+# snapcraft は依存関係として入るだけで、libwebrtc のビルド自体には使われないので、スキップしても問題ない。
+# ただし、この変数は critical level で定義されているので、通常の方法では外部から設定できないため、やむなく debconf の db_get() をオーバーライドする。
+echo 'db_get () { if [ "$@" = "snapcraft/snap-no-connectivity" ]; then RET="Skip"; else _db_cmd "GET $@"; fi }' >> /usr/share/debconf/confmodule
+apt-get install -y snapcraft
 
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get -y install \
   binutils \
   git \
+  libsdl2-dev \
   locales \
   lsb-release \
-  ninja-build \
-  pkg-config \
+  python \
+  python-setuptools \
   python3 \
   python3-setuptools \
   rsync \
   sudo \
   unzip \
   vim \
-  wget \
-  xz-utils
+  wget

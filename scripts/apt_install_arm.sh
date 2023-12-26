@@ -2,11 +2,8 @@
 
 set -ex
 
-# grub-efi-amd64-signed がエラーになるので hold で回避する
-# ref: https://github.com/community/community/discussions/47863
-apt-mark hold grub-efi-amd64-signed
-apt-get update --fix-missing
-apt-get upgrade
+apt-get update
+apt-get -y upgrade
 
 # Ubuntu 18.04 では tzdata を noninteractive にしないと実行が止まってしまう
 apt-get -y install tzdata
@@ -26,7 +23,8 @@ apt-get -y install \
   locales \
   lsb-release \
   multistrap \
-  ninja-build \
+  python \
+  python-setuptools \
   python3 \
   python3-setuptools \
   rsync \
@@ -43,5 +41,5 @@ sed -e 's/Apt::Get::AllowUnauthenticated=true/Apt::Get::AllowUnauthenticated=tru
 # Ubuntu 18.04 では GLIBCXX_3.4.26 が無いためエラーになったので、
 # 新しい libstdc++6 のパッケージがある場所からインストールする
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
-apt-get update
+apt update
 apt-get install -y --only-upgrade libstdc++6

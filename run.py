@@ -1,16 +1,17 @@
-import argparse
-import collections
+import subprocess
 import json
 import logging
 import os
-import platform
-import re
-import shutil
-import subprocess
-import tarfile
 import urllib.parse
 import zipfile
-from typing import Dict, List, Optional
+import tarfile
+import shutil
+import platform
+import argparse
+import collections
+import re
+from typing import Optional, Dict, List
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -48,9 +49,9 @@ def cmd(args, **kwargs):
     return subprocess.run(args, **kwargs)
 
 
-# 执行捕获标准输出的命令。shell的`cmd…`和$(cmd…)一样
+# 標準出力をキャプチャするコマンド実行。シェルの `cmd ...` や $(cmd ...) と同じ
 def cmdcap(args, **kwargs):
-    # 只能在3.7时使用
+    # 3.7 でしか使えない
     # kwargs['capture_output'] = True
     kwargs['stdout'] = subprocess.PIPE
     kwargs['stderr'] = subprocess.PIPE
@@ -114,7 +115,7 @@ def download(url: str, output_dir: Optional[str] = None, filename: Optional[str]
         else:
             cmd(["wget", "-cO", output_path, url])
     except Exception:
-        # 做到不留垃圾
+        # ゴミを残さないようにする
         if os.path.exists(output_path):
             os.remove(output_path)
         raise
@@ -129,7 +130,7 @@ def read_version_file(path: str) -> Dict[str, str]:
     for line in lines:
         line = line.strip()
 
-        # 评论行
+        # コメント行
         if line[:1] == '#':
             continue
 
@@ -143,7 +144,7 @@ def read_version_file(path: str) -> Dict[str, str]:
     return versions
 
 
-# 用来自dir2的相对路径返回dir以下的所有文件路径
+# dir 以下にある全てのファイルパスを、dir2 からの相対パスで返す
 def enum_all_files(dir, dir2):
     for root, _, files in os.walk(dir):
         for file in files:
@@ -162,108 +163,84 @@ def get_depot_tools(source_dir, fetch=False):
 
 
 PATCH_INFO = {
+    '4k.patch': (2, []),
+    'macos_h264_encoder.patch': (2, []),
     'macos_screen_capture.patch': (2, []),
-    'macos_use_xcode_clang.patch': (1, ['build']),
-    'windows_fix_optional.patch': (1, ['third_party']),
+    'ios_bitcode.patch': (1, ['build']),
+    'ios_disable_iossim.patch': (1, ['build']),
 }
 
 PATCHES = {
-    'windows_x86_64': [
+    'windows': [
         '4k.patch',
-        'add_license_dav1d.patch',
         'windows_add_deps.patch',
-        'windows_silence_warnings.patch',
-        'windows_fix_optional.patch',
-        'windows_fix_audio_device.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
-    'windows_arm64': [
+    'macos_x86_64': [
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
-        'windows_add_deps.patch',
-        'windows_silence_warnings.patch',
-        'windows_fix_optional.patch',
-        'windows_fix_audio_device.patch',
+        'macos_h264_encoder.patch',
+        'macos_screen_capture.patch',
+        'macos_simulcast.patch',
+        'ios_simulcast.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
     'macos_arm64': [
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
+        'macos_h264_encoder.patch',
         'macos_screen_capture.patch',
+        'macos_simulcast.patch',
         'ios_simulcast.patch',
         'ssl_verify_callback_with_native_handle.patch',
-        'macos_use_xcode_clang.patch',
-        'h265.patch',
-        'h265_ios.patch',
     ],
     'ios': [
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
+        'macos_h264_encoder.patch',
         'macos_screen_capture.patch',
+        'macos_simulcast.patch',
         'ios_manual_audio_input.patch',
         'ios_simulcast.patch',
         'ssl_verify_callback_with_native_handle.patch',
-        'ios_build.patch',
-        'ios_proxy.patch',
-        'h265.patch',
-        'h265_ios.patch',
+        'ios_bitcode.patch',
+        'ios_disable_iossim.patch',
     ],
     'android': [
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
         'android_webrtc_version.patch',
         'android_fixsegv.patch',
         'android_simulcast.patch',
-        'android_hardware_video_encoder.patch',
-        'android_proxy.patch',
-        'h265.patch',
-        'h265_android.patch',
     ],
     'raspberry-pi-os_armv6': [
         'nacl_armv6_2.patch',
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
     'raspberry-pi-os_armv7': [
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
     'raspberry-pi-os_armv8': [
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
     'ubuntu-18.04_armv8': [
-        'add_deps.patch',
+        'add_dep_zlib.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
-    'ubuntu-20.04_armv8': [
-        'add_deps.patch',
+    'ubuntu-18.04_x86_64': [
         '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ],
     'ubuntu-20.04_x86_64': [
-        'add_deps.patch',
         '4k.patch',
-        'add_license_dav1d.patch',
-        'ssl_verify_callback_with_native_handle.patch',
-    ],
-    'ubuntu-22.04_x86_64': [
-        'add_deps.patch',
-        '4k.patch',
-        'add_license_dav1d.patch',
         'ssl_verify_callback_with_native_handle.patch',
     ]
 }
@@ -271,8 +248,7 @@ PATCHES = {
 
 def apply_patch(patch, dir, depth):
     with cd(dir):
-        logging.info(f'patch -p{depth} < {patch}')
-        if platform.system() in ['Windows']:
+        if platform.system() == 'Windows':
             cmd(['git', 'apply', f'-p{depth}',
                 '--ignore-space-change', '--ignore-whitespace', '--whitespace=nowarn',
                  patch])
@@ -306,10 +282,7 @@ def get_webrtc(source_dir, patch_dir, version, target,
     if fetch:
         with cd(src_dir):
             cmd(['git', 'fetch'])
-            if version == 'HEAD':
-                cmd(['git', 'checkout', '-f', 'origin/HEAD'])
-            else:
-                cmd(['git', 'checkout', '-f', version])
+            cmd(['git', 'checkout', '-f', version])
             cmd(['git', 'clean', '-df'])
             cmd(['gclient', 'sync', '-D', '--force', '--reset', '--with_branch_heads'])
             for patch in PATCHES[target]:
@@ -330,9 +303,6 @@ VersionInfo = collections.namedtuple('VersionInfo', [
     'webrtc_commit',
     'webrtc_build_version',
 ])
-DepsInfo = collections.namedtuple('DepsInfo', [
-    'macos_deployment_target',
-])
 
 
 def archive_objects(ar, dir, output):
@@ -349,27 +319,22 @@ MultistrapConfig = collections.namedtuple('MultistrapConfig', [
 ])
 MULTISTRAP_CONFIGS = {
     'raspberry-pi-os_armv6': MultistrapConfig(
-        config_file=['multistrap', 'raspberry-pi-os_armv6.conf'],
+        config_file=['raspberry-pi-os_armv6', 'rpi-raspbian.conf'],
         arch='armhf',
         triplet='arm-linux-gnueabihf'
     ),
     'raspberry-pi-os_armv7': MultistrapConfig(
-        config_file=['multistrap', 'raspberry-pi-os_armv7.conf'],
+        config_file=['raspberry-pi-os_armv7', 'rpi-raspbian.conf'],
         arch='armhf',
         triplet='arm-linux-gnueabihf'
     ),
     'raspberry-pi-os_armv8': MultistrapConfig(
-        config_file=['multistrap', 'raspberry-pi-os_armv8.conf'],
+        config_file=['raspberry-pi-os_armv8', 'rpi-raspbian.conf'],
         arch='arm64',
         triplet='aarch64-linux-gnu'
     ),
     'ubuntu-18.04_armv8': MultistrapConfig(
-        config_file=['multistrap', 'ubuntu-18.04_armv8.conf'],
-        arch='arm64',
-        triplet='aarch64-linux-gnu'
-    ),
-    'ubuntu-20.04_armv8': MultistrapConfig(
-        config_file=['multistrap', 'ubuntu-20.04_armv8.conf'],
+        config_file=['ubuntu-18.04_armv8', 'arm64.conf'],
         arch='arm64',
         triplet='aarch64-linux-gnu'
     ),
@@ -421,6 +386,7 @@ WEBRTC_BUILD_TARGETS_MACOS_COMMON = [
     'sdk:videocapture_objc',
 ]
 WEBRTC_BUILD_TARGETS = {
+    'macos_x86_64': [*WEBRTC_BUILD_TARGETS_MACOS_COMMON, 'sdk:mac_framework_objc'],
     'macos_arm64': [*WEBRTC_BUILD_TARGETS_MACOS_COMMON, 'sdk:mac_framework_objc'],
     'ios': [*WEBRTC_BUILD_TARGETS_MACOS_COMMON, 'sdk:framework_objc'],
     'android': ['sdk/android:libwebrtc', 'sdk/android:libjingle_peerconnection_so', 'sdk/android:native_api'],
@@ -429,14 +395,14 @@ WEBRTC_BUILD_TARGETS = {
 
 def get_build_targets(target):
     ts = [':default']
-    if target not in ('windows_x86_64', 'windows_arm64', 'ios', 'macos_arm64'):
+    if target not in ('windows', 'ios', 'macos_x86_64', 'macos_arm64'):
         ts += ['buildtools/third_party/libc++']
     ts += WEBRTC_BUILD_TARGETS.get(target, [])
     return ts
 
 
-IOS_ARCHS = ['device:arm64']
-IOS_FRAMEWORK_ARCHS = ['simulator:arm64', 'device:arm64']
+IOS_ARCHS = ['simulator:x64', 'device:arm64']
+IOS_FRAMEWORK_ARCHS = ['simulator:x64', 'simulator:arm64', 'device:arm64']
 
 
 def to_gn_args(gn_args: List[str], extra_gn_args: str) -> str:
@@ -462,7 +428,7 @@ def get_webrtc_version_info(version_info: VersionInfo):
         revision = version_info.webrtc_commit
         maint = version_info.webrtc_build_version.split('.')[3]
     else:
-        # 如果是HEAD build的话，就无法得到正确的版本，这时可以适当地加入空字。
+        # HEAD ビルドだと正しくバージョンが取れないので、その場合は適当に空文字を入れておく
         branch = ''
         commit = ''
         revision = ''
@@ -471,7 +437,7 @@ def get_webrtc_version_info(version_info: VersionInfo):
 
 
 def build_webrtc_ios(
-        source_dir, build_dir, version_info: VersionInfo, deps_info: DepsInfo, extra_gn_args,
+        source_dir, build_dir, version_info: VersionInfo, extra_gn_args,
         webrtc_source_dir=None, webrtc_build_dir=None,
         debug=False,
         gen=False, gen_force=False,
@@ -487,22 +453,22 @@ def build_webrtc_ios(
     mkdir_p(webrtc_build_dir)
 
     mkdir_p(os.path.join(webrtc_build_dir, 'framework'))
-    # - M92-M93 不支持 clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode
-    #   通过使用use_xcode_clang=false来修正
-    # - M94 use_xcode_clang=true并且启用--bitcode，构建通过，确认bitcode已启用
-    # - M95 中再次出现clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode错误
-    # - https://webrtc-review.googlesource.com/c/src/+/232600 由于可能影响，添加use_lld=false
+    # - M92-M93 あたりで clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode
+    #   がでていたので use_xcode_clang=false をすることで修正
+    # - M94 で use_xcode_clang=true かつ --bitcode を有効にしてビルドが通り bitcode が有効になってることを確認
+    # - M95 で再度 clang++: error: -gdwarf-aranges is not supported with -fembed-bitcode エラーがでるようになった
+    # - https://webrtc-review.googlesource.com/c/src/+/232600 が影響している可能性があるため use_lld=false を追加
     gn_args_base = [
+        'use_xcode_clang=true',
         'rtc_libvpx_build_vp9=true',
+        'libcxx_abi_unstable=false',
         'enable_dsyms=true',
-        'use_custom_libcxx=false',
         'use_lld=false',
         'rtc_enable_objc_symbol_export=true',
-        'treat_warnings_as_errors=false',
         *COMMON_GN_ARGS,
     ]
 
-    # WebRTC.xcframework 的构建
+    # WebRTC.xcframework のビルド
     if not nobuild_framework:
         gn_args = [
             *gn_args_base,
@@ -512,6 +478,7 @@ def build_webrtc_ios(
             '-o', os.path.join(webrtc_build_dir, 'framework'),
             '--build_config', 'debug' if debug else 'release',
             '--arch', *IOS_FRAMEWORK_ARCHS,
+            '--bitcode',
             '--extra-gn-args', to_gn_args(gn_args, extra_gn_args)
         ])
         info = {}
@@ -536,8 +503,7 @@ def build_webrtc_ios(
         with cd(os.path.join(webrtc_src_dir, 'tools_webrtc', 'ios')):
             ios_deployment_target = cmdcap(
                 ['python3', '-c',
-                 'from build_ios_libs import IOS_MINIMUM_DEPLOYMENT_TARGET;'
-                 f'print(IOS_MINIMUM_DEPLOYMENT_TARGET["{device}"])'])
+                 f'from build_ios_libs import IOS_DEPLOYMENT_TARGET; print(IOS_DEPLOYMENT_TARGET["{device}"])'])
 
         if not os.path.exists(os.path.join(work_dir, 'args.gn')) or gen or overlap_build_dir:
             gn_args = [
@@ -547,6 +513,7 @@ def build_webrtc_ios(
                 f'target_environment="{device}"',
                 "ios_enable_code_signing=false",
                 f'ios_deployment_target="{ios_deployment_target}"',
+                'enable_ios_bitcode=true',
                 f"enable_stripping={'false' if debug else 'true'}",
                 *gn_args_base,
             ]
@@ -568,7 +535,7 @@ ANDROID_TARGET_CPU = {
 
 
 def build_webrtc_android(
-        source_dir, build_dir, version_info: VersionInfo, deps_info: DepsInfo, extra_gn_args,
+        source_dir, build_dir, version_info: VersionInfo, extra_gn_args,
         webrtc_source_dir=None, webrtc_build_dir=None,
         debug=False,
         gen=False, gen_force=False,
@@ -582,7 +549,7 @@ def build_webrtc_android(
 
     mkdir_p(webrtc_build_dir)
 
-    # Java文件制作
+    # Java ファイル作成
     branch, commit, revision, maint = get_webrtc_version_info(version_info)
     name = 'WebrtcBuildVersion'
     lines = []
@@ -632,7 +599,7 @@ def build_webrtc_android(
 
 
 def build_webrtc(
-        source_dir, build_dir, target: str, version_info: VersionInfo, deps_info: DepsInfo, extra_gn_args,
+        source_dir, build_dir, target: str, version_info: VersionInfo, extra_gn_args,
         webrtc_source_dir=None, webrtc_build_dir=None,
         debug=False,
         gen=False, gen_force=False,
@@ -646,7 +613,7 @@ def build_webrtc(
 
     mkdir_p(webrtc_build_dir)
 
-    # 构建
+    # ビルド
     if gen_force:
         rm_rf(webrtc_build_dir)
     if not os.path.exists(os.path.join(webrtc_build_dir, 'args.gn')) or gen:
@@ -654,37 +621,30 @@ def build_webrtc(
             f"is_debug={'true' if debug else 'false'}",
             *COMMON_GN_ARGS,
         ]
-        if target in ['windows_x86_64', 'windows_arm64']:
+        if target == 'windows':
             gn_args += [
-                'target_os="win"',
-                f'target_cpu="{"x64" if target == "windows_x86_64" else "arm64"}"',
                 "use_custom_libcxx=false",
             ]
-        elif target in ('macos_arm64',):
+        elif target in ('macos_x86_64', 'macos_arm64'):
             gn_args += [
                 'target_os="mac"',
-                'target_cpu="arm64"',
-                f'mac_deployment_target="{deps_info.macos_deployment_target}"',
+                f'target_cpu="{"x64" if target == "macos_x86_64" else "arm64"}"',
+                'mac_deployment_target="10.11"',
                 'enable_stripping=true',
                 'enable_dsyms=true',
                 'rtc_libvpx_build_vp9=true',
                 'rtc_enable_symbol_export=true',
                 'rtc_enable_objc_symbol_export=false',
-                'use_custom_libcxx=false',
-                'treat_warnings_as_errors=false',
-                'clang_use_chrome_plugins=false',
-                'use_lld=false',
+                'libcxx_abi_unstable=false',
             ]
         elif target in ('raspberry-pi-os_armv6',
                         'raspberry-pi-os_armv7',
                         'raspberry-pi-os_armv8',
-                        'ubuntu-18.04_armv8',
-                        'ubuntu-20.04_armv8'):
+                        'ubuntu-18.04_armv8'):
             sysroot = os.path.join(source_dir, 'rootfs')
-            arm64_set = ("raspberry-pi-os_armv8", "ubuntu-18.04_armv8", "ubuntu-20.04_armv8")
             gn_args += [
                 'target_os="linux"',
-                f'target_cpu="{"arm64" if target in arm64_set else "arm"}"',
+                f'target_cpu="{"arm64" if target in ("raspberry-pi-os_armv8", "ubuntu-18.04_armv8") else "arm"}"',
                 f'target_sysroot="{sysroot}"',
                 'rtc_use_pipewire=false',
             ]
@@ -698,7 +658,7 @@ def build_webrtc(
                     'arm_use_neon=false',
                     'enable_libaom=false',
                 ]
-        elif target in ('ubuntu-20.04_x86_64', 'ubuntu-22.04_x86_64'):
+        elif target in ('ubuntu-18.04_x86_64', 'ubuntu-20.04_x86_64'):
             gn_args += [
                 'target_os="linux"',
                 'rtc_use_pipewire=false',
@@ -712,19 +672,19 @@ def build_webrtc(
         return
 
     cmd(['ninja', '-C', webrtc_build_dir, *get_build_targets(target)])
-    if target in ['windows_x86_64', 'windows_arm64']:
+    if target == 'windows':
         pass
-    elif target in ('macos_arm64',):
+    elif target in ('macos_x86_64', 'macos_arm64'):
         ar = '/usr/bin/ar'
     else:
         ar = os.path.join(webrtc_src_dir, 'third_party/llvm-build/Release+Asserts/bin/llvm-ar')
 
-    # 用ar生成libwebrtc.a
-    if target not in ['windows_x86_64', 'windows_arm64']:
+    # ar で libwebrtc.a を生成する
+    if target != 'windows':
         archive_objects(ar, os.path.join(webrtc_build_dir, 'obj'), os.path.join(webrtc_build_dir, 'libwebrtc.a'))
 
-    # macOS的情况下，在WebRTC.framework中加入追加信息
-    if (target in ('macos_arm64',)) and not nobuild_macos_framework:
+    # macOS の場合は WebRTC.framework に追加情報を入れる
+    if (target in ('macos_x86_64', 'macos_arm64')) and not nobuild_macos_framework:
         branch, commit, revision, maint = get_webrtc_version_info(version_info)
         info = {}
         info['branch'] = branch
@@ -734,7 +694,7 @@ def build_webrtc(
         with open(os.path.join(webrtc_build_dir, 'WebRTC.framework', 'Resources', 'build_info.json'), 'w') as f:
             f.write(json.dumps(info, indent=4))
 
-        # Info.plist的编辑(沿用tools_wertc/ios/build_ios_libs.py中的处理)
+        # Info.plistの編集(tools_wertc/ios/build_ios_libs.py内の処理を踏襲)
         info_plist_path = os.path.join(webrtc_build_dir, 'WebRTC.framework', 'Resources', 'Info.plist')
         ver = cmdcap(['/usr/libexec/PlistBuddy', '-c', 'Print :CFBundleShortVersionString', info_plist_path],
                      resolve=False)
@@ -742,7 +702,7 @@ def build_webrtc(
             f'Set :CFBundleVersion {ver}.0', info_plist_path], resolve=False, encoding='utf-8')
         cmd(['plutil', '-convert', 'binary1', info_plist_path])
 
-        # xcframework的制作
+        # xcframeworkの作成
         rm_rf(os.path.join(webrtc_build_dir, 'WebRTC.xcframework'))
         cmd(['xcodebuild', '-create-xcframework',
             '-framework', os.path.join(webrtc_build_dir, 'WebRTC.framework'),
@@ -751,8 +711,8 @@ def build_webrtc(
 
 
 def copy_headers(webrtc_src_dir, webrtc_package_dir, target):
-    if target in ['windows_x86_64', 'windows_arm64']:
-        # 因为robocopy的返回值是特殊的，所以check=False，然后处理错误
+    if target == 'windows':
+        # robocopy の戻り値は特殊なので、check=False にしてうまくエラーハンドリングする
         # https://docs.microsoft.com/ja-jp/troubleshoot/windows-server/backup-and-storage/return-codes-used-robocopy-utility
         r = cmd(['robocopy', webrtc_src_dir, os.path.join(webrtc_package_dir, 'include'),
                 '*.h', '*.hpp', '/S', '/NP', '/NFL', '/NDL'], check=False)
@@ -770,9 +730,9 @@ def generate_version_info(webrtc_src_dir, webrtc_package_dir):
         (['.'], ''),
         (['build'], 'BUILD'),
         (['buildtools'], 'BUILDTOOLS'),
-        (['third_party', 'libc++', 'src'], 'THIRD_PARTY_LIBCXX_SRC'),
-        (['third_party', 'libc++abi', 'src'], 'THIRD_PARTY_LIBCXXABI_SRC'),
-        (['third_party', 'libunwind', 'src'], 'THIRD_PARTY_LIBUNWIND_SRC'),
+        (['buildtools', 'third_party', 'libc++', 'trunk'], 'BUILDTOOLS_THIRD_PARTY_LIBCXX_TRUNK'),
+        (['buildtools', 'third_party', 'libc++abi', 'trunk'], 'BUILDTOOLS_THIRD_PARTY_LIBCXXABI_TRUNK'),
+        (['buildtools', 'third_party', 'libunwind', 'trunk'], 'BUILDTOOLS_THIRD_PARTY_LIBUNWIND_TRUNK'),
         (['third_party'], 'THIRD_PARTY'),
         (['tools'], 'TOOLS'),
     ]
@@ -786,17 +746,6 @@ def generate_version_info(webrtc_src_dir, webrtc_package_dir):
     shutil.copyfile('VERSION', os.path.join(webrtc_package_dir, 'VERSIONS'))
     with open(os.path.join(webrtc_package_dir, 'VERSIONS'), 'ab') as f:
         f.writelines(map(lambda x: (x + '\n').encode('utf-8'), lines))
-
-
-def generate_deps_info(webrtc_src_dir, webrtc_package_dir):
-    shutil.copyfile('DEPS', os.path.join(webrtc_package_dir, 'DEPS'))
-    with cd(os.path.join(webrtc_src_dir, 'tools_webrtc', 'ios')):
-        ios_deployment_target = cmdcap(
-            ['python3', '-c',
-                'from build_ios_libs import IOS_MINIMUM_DEPLOYMENT_TARGET;'
-                'print(IOS_MINIMUM_DEPLOYMENT_TARGET["device"])'])
-    with open(os.path.join(webrtc_package_dir, 'DEPS'), 'ab') as f:
-        f.write(f'IOS_DEPLOYMENT_TARGET={ios_deployment_target}\n'.encode('utf-8'))
 
 
 def package_webrtc(source_dir, build_dir, package_dir, target,
@@ -814,7 +763,7 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
     rm_rf(webrtc_package_dir)
     mkdir_p(webrtc_package_dir)
 
-    # 许可证生成
+    # ライセンス生成
     if target == 'android':
         dirs = []
         for arch in ANDROID_ARCHS:
@@ -841,21 +790,18 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
         *ts, webrtc_package_dir, *dirs])
     os.rename(os.path.join(webrtc_package_dir, 'LICENSE.md'), os.path.join(webrtc_package_dir, 'NOTICE'))
 
-    # 复制标题文件
+    # ヘッダーファイルをコピー
     copy_headers(webrtc_src_dir, webrtc_package_dir, target)
 
-    # 版本信息
+    # バージョン情報
     generate_version_info(webrtc_src_dir, webrtc_package_dir)
 
-    # 依赖信息
-    generate_deps_info(webrtc_src_dir, webrtc_package_dir)
-
-    # 库
-    if target in ['windows_x86_64', 'windows_arm64']:
+    # ライブラリ
+    if target == 'windows':
         files = [
             (['obj', 'webrtc.lib'], ['lib', 'webrtc.lib']),
         ]
-    elif target in ('macos_arm64',):
+    elif target in ('macos_x86_64', 'macos_arm64'):
         files = [
             (['libwebrtc.a'], ['lib', 'libwebrtc.a']),
             (['WebRTC.xcframework'], ['Frameworks', 'WebRTC.xcframework']),
@@ -866,7 +812,7 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
             (['framework', 'WebRTC.xcframework'], ['Frameworks', 'WebRTC.xcframework']),
         ]
     elif target == 'android':
-        # 展开aar，取出assas .jar
+        # aar を展開して classes.jar を取り出す
         tmp = os.path.join(webrtc_build_dir, 'tmp')
         rm_rf(tmp)
         mkdir_p(tmp)
@@ -898,25 +844,24 @@ def package_webrtc(source_dir, build_dir, package_dir, target,
 
     # 圧縮
     with cd(package_dir):
-        if target in ['windows_x86_64', 'windows_arm64']:
-            with zipfile.ZipFile(f'webrtc.{target}.zip', 'w') as f:
+        if target == 'windows':
+            with zipfile.ZipFile('webrtc.zip', 'w') as f:
                 for file in enum_all_files('webrtc', '.'):
                     f.write(filename=file, arcname=file)
         else:
-            with tarfile.open(f'webrtc.{target}.tar.gz', 'w:gz') as f:
+            with tarfile.open('webrtc.tar.gz', 'w:gz') as f:
                 for file in enum_all_files('webrtc', '.'):
                     f.add(name=file, arcname=file)
 
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 TARGETS = [
-    'windows_x86_64',
-    'windows_arm64',
+    'windows',
+    'macos_x86_64',
     'macos_arm64',
+    'ubuntu-18.04_x86_64',
     'ubuntu-20.04_x86_64',
-    'ubuntu-22.04_x86_64',
     'ubuntu-18.04_armv8',
-    'ubuntu-20.04_armv8',
     'raspberry-pi-os_armv6',
     'raspberry-pi-os_armv7',
     'raspberry-pi-os_armv8',
@@ -930,10 +875,10 @@ def check_target(target):
 
     if platform.system() == 'Windows':
         logging.info(f'OS: {platform.system()}')
-        return target in ['windows_x86_64', 'windows_arm64']
+        return target == 'windows'
     elif platform.system() == 'Darwin':
         logging.info(f'OS: {platform.system()}')
-        return target in ('macos_arm64', 'ios')
+        return target in ('macos_x86_64', 'macos_arm64', 'ios')
     elif platform.system() == 'Linux':
         release = read_version_file('/etc/os-release')
         os = release['NAME']
@@ -941,27 +886,26 @@ def check_target(target):
         if os != 'Ubuntu':
             return False
 
-        # x86 64环境以外不可构建
+        # x86_64 環境以外ではビルド不可
         arch = platform.machine()
         logging.info(f'Arch: {arch}')
         if arch not in ('AMD64', 'x86_64'):
             return False
 
-        # 因为是交叉编译，Ubuntu可以(应该)构建任何版本
+        # クロスコンパイルなので Ubuntu だったら任意のバージョンでビルド可能（なはず）
         if target in ('ubuntu-18.04_armv8',
-                      'ubuntu-20.04_armv8',
                       'raspberry-pi-os_armv6',
                       'raspberry-pi-os_armv7',
                       'raspberry-pi-os_armv8',
                       'android'):
             return True
 
-        # x86 64用的build需要版本合适
+        # x86_64 用ビルドはバージョンが合っている必要がある
         osver = release['VERSION_ID']
         logging.info(f'OS Version: {osver}')
-        if target == 'ubuntu-20.04_x86_64' and osver == '20.04':
+        if target == 'ubuntu-18.04_x86_64' and osver == '18.04':
             return True
-        if target == 'ubuntu-22.04_x86_64' and osver == '22.04':
+        if target == 'ubuntu-20.04_x86_64' and osver == '20.04':
             return True
 
         return False
@@ -971,17 +915,17 @@ def check_target(target):
 
 def main():
     """
-    笔记
+    メモ
 
-    构建方针:
-        -在没有自变量的情况下执行，只进行构建
-        -如果不存在需要的文件就进行获取和生成，但不确认是否有新的更新。
-        -传递各种参数后，进行更新和生成。
-        - fetch类:更新各种信源
-        - fetch-force系:先全部删除再重新获取
-        gen系统:在已有的构建目录上进行gn gen
-        - gen-force系:现有的构建目录完全删除，重新gn gen
-        - nobuild类:不进行构建
+    ビルド方針:
+        - 引数無しで実行した場合、ビルドのみ行う
+            - もし必要とするファイルが存在しなければ取得や生成を行うが、新しい更新があるかどうかは確認しない。
+        - 各種引数を渡すと、更新や生成を行う。
+            - fetch 系: 各種ソースを更新する
+            - fetch-force 系: 一旦全て削除してから取得し直す
+            - gen 系: 既存のビルドディレクトリの上に gn gen を行う
+            - gen-force 系: 既存のビルドディレクトリは完全に削除してから gn gen をやり直す
+            - nobuild 系: ビルドを行わない
     """
     parser = argparse.ArgumentParser()
     sp = parser.add_subparsers()
@@ -1004,8 +948,8 @@ def main():
     bp.add_argument("--webrtc-overlap-ios-build-dir", action='store_true')
     bp.add_argument("--webrtc-build-dir")
     bp.add_argument("--webrtc-source-dir")
-    # 现在build和package已经没有分开的意义了，
-    # 在今后汇总多个构建进行包装时，预先设置成不同的指令。
+    # 現在 build と package を分ける意味は無いのだけど、
+    # 今後複数のビルドを纏めてパッケージングする時に備えて別コマンドにしておく
     pp = sp.add_parser('package')
     pp.set_defaults(op='package')
     pp.add_argument("target", choices=TARGETS)
@@ -1045,8 +989,8 @@ def main():
             package_dir = args.package_dir
         webrtc_package_dir = os.path.abspath(args.webrtc_package_dir) if args.webrtc_package_dir is not None else None
 
-    if args.target in ['windows_x86_64', 'windows_arm64']:
-        # 设置Windows WebRTC构建所需的环境变量
+    if args.target == 'windows':
+        # Windows の WebRTC ビルドに必要な環境変数の設定
         mkdir_p(build_dir)
         download("https://github.com/microsoft/vswhere/releases/download/2.8.4/vswhere.exe", build_dir)
         path = cmdcap([os.path.join(build_dir, 'vswhere.exe'), '-latest',
@@ -1069,9 +1013,6 @@ def main():
         webrtc_version=version_file['WEBRTC_VERSION'],
         webrtc_commit=version_file['WEBRTC_COMMIT'],
         webrtc_build_version=version_file['WEBRTC_BUILD_VERSION'])
-    deps_file = read_version_file('DEPS')
-    deps_info = DepsInfo(
-        macos_deployment_target=deps_file['MACOS_DEPLOYMENT_TARGET'])
 
     if args.op == 'build':
         mkdir_p(source_dir)
@@ -1084,20 +1025,19 @@ def main():
 
             dir = get_depot_tools(source_dir, fetch=args.depottools_fetch)
             add_path(dir)
-            if args.target in ['windows_x86_64', 'windows_arm64']:
-                cmd(['git', 'config', '--global', 'core.longpaths', 'true'])
+            if args.target == 'windows':
+                cmd(['git', 'config', '--system', 'core.longpaths', 'true'])
 
-            # 源获取
+            # ソース取得
             get_webrtc(source_dir, patch_dir, version_info.webrtc_commit, args.target,
                        webrtc_source_dir=webrtc_source_dir,
                        fetch=args.webrtc_fetch, force=args.webrtc_fetch_force)
 
-            # 构建
+            # ビルド
             build_webrtc_args = {
                 'source_dir': source_dir,
                 'build_dir': build_dir,
                 'version_info': version_info,
-                'deps_info': deps_info,
                 'extra_gn_args': args.webrtc_extra_gn_args,
                 'webrtc_source_dir': webrtc_source_dir,
                 'webrtc_build_dir': webrtc_build_dir,
@@ -1106,7 +1046,7 @@ def main():
                 'gen_force': args.webrtc_gen_force,
                 'nobuild': args.webrtc_nobuild,
             }
-            # iOS和Android太特殊了
+            # iOS と Android は特殊すぎるので別枠行き
             if args.target == 'ios':
                 build_webrtc_ios(**build_webrtc_args,
                                  nobuild_framework=args.webrtc_nobuild_ios_framework,

@@ -10,91 +10,55 @@ We will not respond to PRs or issues that have not been discussed on Discord. Al
 
 Please read https://github.com/shiguredo/oss/blob/master/README.en.md before use.
 
-## 关于时雨堂的开源软件
+## 時雨堂のオープンソースソフトウェアについて
 
-使用前请阅读<https://github.com/shiguredo/oss>
+利用前に https://github.com/shiguredo/oss をお読みください。
 
-## 关于webrtc-build
+## webrtc-build について
 
-我们为各种环境构建WebRTC，提供二进制文件。
+様々な環境向けの WebRTC のビルドを行って、そのバイナリを提供しています。
 
-## 下载
+## ダウンロード
 
-[发布](https://github.com/melpon/webrtc-build/releases) 请从这里下载。
+[リリース](https://github.com/melpon/webrtc-build/releases) からダウンロードしてください。
 
-## 包装里的内容
+## パッケージに入っている内容
 
-- WebRTC库(WebRTC .lib或libwebrtc.a)
-- WebRTC的头文件
-- WebRTC版本信息
+- WebRTC ライブラリ(webrtc.lib あるいは libwebrtc.a)
+- WebRTC のインクルードヘッダ
+- WebRTC のバージョン情報(コミットハッシュ)
 
-## 现在提供的构建
+## 現在提供しているビルド
 
-- windows_x86_64
-- windows_arm64
+- windows x86_64
 - macos_arm64
-- raspberry-pi-os_armv6 (Raspberry Pi Zero, 1)
-- raspberry-pi-os_armv7 (Raspberry Pi 2, 3, 4)
-- raspberry-pi-os_armv8 (Raspberry Pi Zero 2, 3, 4)
+- macos_x86_64
+- raspberry-pi-os_armv6 (Raspberry Pi Zero)
+- raspberry-pi-os_armv7 (Raspberry Pi 3, 4)
+- raspberry-pi-os_armv8 (Raspberry Pi 3, 4)
 - ubuntu-18.04_armv8
-  - Jetson Nano
-  - Jetson Xavier NX
-  - Jetson AGX Xavier
-- ubuntu-20.04_armv8
-  - Jetson Xavier NX
-  - Jetson AGX Xavier
-  - Jetson Orin NX
-  - Jetson AGX Orin
+    - Jetson Nano
+    - Jetson Xavier NX
+    - Jetson AGX Xavier
+- ubuntu-18.04_x86_64
 - ubuntu-20.04_x86_64
-- ubuntu-22.04_x86_64
-- android_arm64
-- ios_arm64
+- android
+- ios
 
-### hololens2关于构建
+## 今後提供を検討しているビルド
 
-- 支持的分支是support/hololens2。
-- 最新的libwebrtc追随是有偿的
-- 修正错误是有偿的。
+**有償での優先実装を検討可能です**
 
-## 廃止
+- windows_arm64
+- ubuntu-20.04_armv8
 
-- macOS x86_64 废除
-  - 到2022年6月，它被取消了。
-- Ubuntu 18.04 x86_64 废除
-  - 2022 年 6 月，它被取消了。
-- Jetson 向け ARM 版 Ubuntu 18.04 废除
-  - 2023 年 4 月，它被取消了。
-
-## H.264 (AVC)和H.265 (HEVC)许可证
-
-时雨堂提供的libwebrtc已构建二进制文件中不包含H.264和H.265编译码器。
-
-### H.264
-
-H.264对应[Via LA Licensing](https://www.via-la.com/)(原MPEG-LA)取得联系，确认不成为专利费的对象。。
-
-如果时雨堂提供依赖于终端用户的PC /设备中已有的AVC / H.264编码器/解码器的产品，
-软件产品不属于AVC授权的对象，也不属于专利费的对象。
-
-### H.265
-
-H.265支持联系以下两个团体，仅利用H.265硬件加速器，
-正在确认H.265分发可利用的二进制的事，不需要许可证。
-
-另外，在OSS中公开了仅使用H.265硬件加速器的支持H.265的SDK，
-分发已构建的二进制文件是不需要许可证的。
-
-- [Access Advance](https://accessadvance.com/ja/)
-- [Via LA Licensing](https://www.via-la.com/)
-
-## 许可证
+## ライセンス
 
 Apache License 2.0
 
 ```
-Copyright 2019-2023, Wandbox LLC (Original Author)
-Copyright 2019-2023, tnoho (Original Author)
-Copyright 2019-2023, Shiguredo Inc.
+Copyright 2019-2021, Wandbox LLC (Original Author)
+Copyright 2019-2021, Shiguredo Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -108,3 +72,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+
+### コントリビューター
+
+- melpon - *Original Author*
+    - Android サポート
+    - iOS サポート
+    - CentOS 8 サポート
+- tnoho - *Original Author*
+    - macOS 向け AV1 サポート
+    - macOS 向け H.265 サポート
+- hakobera
+    - Ubuntu 20.04 x86_64 サポート
+    - macOS 11 arm64 サポート
+- enm10k
+    - iOS 向けデバッグビルド追加
+- soudegesu
+    - macOS 向け ObjC ヘッダー追加
+
+## タグやブランチ運用について
+
+- feature/m94.4606 のようにブランチを切ります
+    - branch-heads のブランチは削除してはいけません
+    - stable リリースまでは feature 上でタグを打ちます
+- stable リリースされたら master にマージします
+    - ブランチから変更が無ければタグを打つ必要はありません
+- libwebrtc のコミットポジションは変更せずに何か変更がある場合は一番右の数値を増やします
+    - m94.4606.0.0 から m94.4606.0.1 のようにする
+
+## パッチ運用について
+
+- 最新版でパッチが動作しない場合はパッチ作成者が修正をしてください
+- 何かしらの理由でパッチ修正が難しい場合はパッチを削除します
+    - 時雨堂で必要と思ったパッチは時雨堂にて対応します
