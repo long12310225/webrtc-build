@@ -4,7 +4,8 @@ FROM ubuntu:20.04 AS builder
 ARG PACKAGE_NAME=ubuntu-18.04_armv8
 
 ENV PACKAGE_DIR "/root/_package/$PACKAGE_NAME"
-
+ENV http_proxy http://10.2.111.42:7890
+ENV https_proxy http://10.2.111.42:7890
 COPY run.py /root/
 COPY VERSION /root/
 COPY patches/ /root/patches/
