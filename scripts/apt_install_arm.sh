@@ -10,8 +10,6 @@ apt-get -y install tzdata
 echo 'Asia/Tokyo' > /etc/timezone
 dpkg-reconfigure -f noninteractive tzdata
 
-export DEBIAN_FRONTEND=noninteractive
-
 apt-get -y install \
   build-essential \
   curl \
@@ -20,17 +18,12 @@ apt-get -y install \
   lbzip2 \
   libgtk-3-dev \
   libstdc++6 \
-  locales \
   lsb-release \
   multistrap \
   python \
-  python-setuptools \
-  python3 \
-  python3-setuptools \
   rsync \
   software-properties-common \
   sudo \
-  unzip \
   vim \
   xz-utils
 
