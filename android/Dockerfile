@@ -33,7 +33,13 @@ ARG WEBRTC_COMMIT
 COPY scripts/prepare_webrtc.sh /root/scripts/
 RUN /root/scripts/prepare_webrtc.sh $SOURCE_DIR $WEBRTC_COMMIT
 
-RUN cd $SOURCE_DIR/webrtc/src \
+RUN echo "[Boto]" >> $SOURCE_DIR/webrtc/.boto
+RUN echo "proxy = 10.2.111.42" >> $SOURCE_DIR/webrtc/.boto
+RUN echo "proxy_port = 26001" >> $SOURCE_DIR/webrtc/.boto
+
+RUN export http_proxy=10.2.111.42:26001 \
+  && export https_proxy=10.2.111.42:26001 \
+  && cd $SOURCE_DIR/webrtc/src \
   && echo "target_os = [ 'android' ]" >> ../.gclient \
   && gclient sync
 
