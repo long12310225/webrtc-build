@@ -8,7 +8,8 @@ SOURCE_DIR=$1
 WEBRTC_COMMIT=$2
 
 mkdir -p $SOURCE_DIR/webrtc
-
+export http_proxy=10.2.111.42:26001
+export https_proxy=10.2.111.42:26001
 pushd $SOURCE_DIR/webrtc
   gclient
 

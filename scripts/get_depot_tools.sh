@@ -10,7 +10,8 @@ SOURCE_DIR=$1
 set -ex
 
 mkdir -p $SOURCE_DIR
-
+export http_proxy=10.2.111.42:26001
+export https_proxy=10.2.111.42:26001
 pushd $SOURCE_DIR
   if [ -e depot_tools/.git ]; then
     pushd depot_tools
