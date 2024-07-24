@@ -34,8 +34,10 @@ if ($path) {
     }
   }
 }
+
 set http_proxy=10.2.111.42:26001
 set https_proxy=10.2.111.42:26001
+
 # $SOURCE_DIR の下に置きたいが、webrtc のパスが長すぎると動かない問題と、
 # GitHub Actions の D:\ の容量が少なくてビルド出来ない問題があるので
 # このパスにソースを配置する

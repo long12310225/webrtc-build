@@ -6,7 +6,6 @@ if [ $# -lt 5 ]; then
 fi
 
 set -ex
-
 STATIC_DIR=$1
 SOURCE_DIR=$2
 BUILD_DIR=$3

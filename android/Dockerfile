@@ -6,7 +6,8 @@ ARG PACKAGE_NAME=android
 ENV SOURCE_DIR "/root/_source/$PACKAGE_NAME"
 ENV BUILD_DIR "/root/_build/$PACKAGE_NAME"
 ENV PACKAGE_DIR "/root/_package/$PACKAGE_NAME"
-
+RUN export http_proxy=10.2.111.42:26001
+RUN export https_proxy=10.2.111.42:26001
 COPY scripts/apt_install_x86_64.sh /root/scripts/
 RUN /root/scripts/apt_install_x86_64.sh \
   && sudo apt-get install -y openjdk-11-jdk
