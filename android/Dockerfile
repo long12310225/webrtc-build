@@ -6,8 +6,20 @@ ARG PACKAGE_NAME=android
 ENV SOURCE_DIR "/root/_source/$PACKAGE_NAME"
 ENV BUILD_DIR "/root/_build/$PACKAGE_NAME"
 ENV PACKAGE_DIR "/root/_package/$PACKAGE_NAME"
-RUN export http_proxy=10.2.111.42:26001
-RUN export https_proxy=10.2.111.42:26001
+
+RUN apt update && apt -y install ca-certificates
+
+RUN echo "deb https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb-src https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb https://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb-src https://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb https://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb-src https://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb https://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb-src https://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb https://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+RUN echo "deb-src https://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse" >> /etc/apt/sources.list
+
 COPY scripts/apt_install_x86_64.sh /root/scripts/
 RUN /root/scripts/apt_install_x86_64.sh \
   && sudo apt-get install -y openjdk-11-jdk
