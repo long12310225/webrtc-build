@@ -1,31 +1,30 @@
-# iOS 向けのパッチについて
+# 关于面向iOS的补丁
 
 ## 内容
 
-- 接続時のマイクのパーミッション要求を抑制する。
+- 抑制连接时对麦克风的分配请求。
 
-- マイクの初期化を明示的に行う API を追加する。
-  パッチ適用後はマイクは自動的に初期化されない。
+- 添加了显式地初始化麦克风的API。
+  安装补丁后麦克风不会自动初始化。
 
-- ``AVAudioSession`` の初期化時に設定されるカテゴリを ``AVAudioSessionCategoryPlayAndRecord`` から ``AVAudioSessionCategoryAmbient`` に変更する。
-
-
-## パッチ適用後の使い方
-
-- マイクを使う場合は ``RTCAudioSession.initializeInput(completionHandler:)`` を実行してマイクを初期化する。
-  - このメソッドはマイクが使用されるまで非同期で待ち、必要になったら初期化する。マイクの使用許可がなければユーザーにパーミッションを要求する。
-  - 接続ごとに実行すること。接続が終了するとマイクは初期化前の状態に戻る。
-  - 実行前に ``RTCAudioSessionConfiguration.webRTCConfiguration.category`` にマイクを使用可能なカテゴリをセットすること。 ``AVAudioSessionCategoryPlayAndRecord`` など。
-
-- マイクを使わない場合は ``Info.plist`` にマイクの用途を記述する必要はない。
+- ``AVAudioSession`` 的初始化时所设置的类别 从``AVAudioSessionCategoryPlayAndRecord`` 改为``AVAudioSessionCategoryAmbient`` 。
 
 
-## `RTCAudioSession` のロックについて
+## 贴片后的使用方法
 
-パッチに変更を加える際は `RTCAudioSession` をロックするタイミングに注意すること。
-実行中に `RTCAudioSession` の設定を `configureWebRTCSession` などのメソッドで変更する場合はロックを行う必要がある。
-ロックは `lockForConfiguration` で行い、 `unlockForConfiguration` で解除する。
-たとえば `configureWebRTCSession` を適切にロックして実行するには、次のように前後を `lockForConfiguration` と `unlockForConfiguration` で囲む:
+- 如果使用麦克风函数 ``RTCAudioSession.initializeInput(completionHandler:)`` 进行初始化。
+  - 该方法是在麦克风被使用之前异步等待，必要时初始化。如果没有麦克风的使用许可，就要求用户进行分配。
+  - 为每个连接执行。连接结束后，麦克风回到初始化前的状态。
+  - 在实行前 ``RTCAudioSessionConfiguration.webRTCConfiguration.category`` 设置麦克风可用的类别。 ``AVAudioSessionCategoryPlayAndRecord``等
+- 如果不使用麦克风，就不必在``Info.plist``中记载麦克风的用途。
+
+
+## `RTCAudioSession` 关于摇滚
+
+对补丁进行变更时要注意锁定`RTCAudioSession`的时机。
+在执行中，如果用configureWebRTCSession`等方法变更`RTCAudioSession`的设定时，需要进行锁定。
+锁定通过`lockForConfiguration`进行，通过`unlockForConfiguration`解除。
+例如，为了适当地锁定并执行‘configureWebRTCSession’，将前后像下面这样‘lockForConfiguration’用`unlockForConfiguration`围起来:
 
 ```
 [session lockForConfiguration];
@@ -33,12 +32,12 @@ bool success = [session configureWebRTCSession:nil];
 [session unlockForConfiguration];
 ```
 
-`lockForConfiguration` はパッチ実装時は再帰的ロックで実装されていたが、現在は相互排他ロック (mutex) で実装されている。
-複数の箇所 (他のスレッド含む) でロックした場合、最初のロックが `unlockForConfiguration` で解除されるまで他の箇所の実行が止まるので注意すべき。
+`lockForConfiguration`在补丁实现时用递归锁实现，现在用互斥锁(mutex)实现。
+应该注意的是，在多个地方(包括其他线程)锁定的情况下，其他地方的执行会停止，直到第一个锁被解除为止。
 
-パッチで追加する `-[RTCAudioSession startVoiceProcessingAudioUnit:]` は `RTCAudioSession` の設定を変更するためにロックを行う。
-`startVoiceProcessingAudioUnit:` は `VoiceProcessingAudioUnit::Initialize()` (`sdk/objc/native/src/audio/voice_processing_audio_unit.mm`) から呼ばれる。
-`VoiceProcessingAudioUnit::Initialize()` は次の複数の箇所から呼ばれている:
+补丁中追加` - [rtcaudiosession s t a r t voiceprocessingaudiounit:] `是` rtcaudiosession `为了设定的变更进行摇滚。
+`startVoiceProcessingAudioUnit:` 在 `VoiceProcessingAudioUnit::Initialize()` (`sdk/objc/native/src/audio/voice_processing_audio_unit.mm`) 被调用。
+`VoiceProcessingAudioUnit::Initialize()` 从以下几个地方被称为:
 
 - `AudioDeviceIOS::InitPlayOrRecord()` (`sdk/objc/native/src/audio/audio_device_ios.mm`)
 - `AudioDeviceIOS::HandleSampleRateChange()` (`sdk/objc/native/src/audio/audio_device_ios.mm`)
@@ -46,8 +45,8 @@ bool success = [session configureWebRTCSession:nil];
 
 `AudioDeviceIOS::InitPlayOrRecord()` はロックした状態で `VoiceProcessingAudioUnit::Initialize()` を呼んでいるが、 `AudioDeviceIOS::HandleSampleRateChange()` は呼び出し元をたどってもロックされていない (と思われる) 。
 
-また、 `AudioDeviceIOS::UpdateAudioUnit()` でもロックされていない。
-メソッド内で `ConfigureAudioSession()` を呼んでいるが、 `ConfigureAudioSession()` 内でロックしている (`-[RTCAudioSession configureWebRTCSession:]` を呼んでいる) ので、もしこの時点でロックされていればデッドロックするはず。
+另外 `AudioDeviceIOS::UpdateAudioUnit()` 也没有被套牢
+在 `ConfigureAudioSession()`方法中调用 `ConfigureAudioSession()` 内でロックしている (`-[RTCAudioSession configureWebRTCSession:]` を呼んでいる) ので、もしこの時点でロックされていればデッドロックするはず。
 したがって、この直後で呼ばれる `VoiceProcessingAudioUnit::Initialize()` はロックせずに呼ばれていることになる。
 
 もしその実装が正しいのであれば、 `VoiceProcessingAudioUnit::Initialize()` の呼び出しはロック不要であり、 `AudioDeviceIOS::InitPlayOrRecord()` で行うロックは意味がない。
