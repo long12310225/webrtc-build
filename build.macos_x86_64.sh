@@ -11,7 +11,6 @@ PACKAGE_DIR="`pwd`/_package/$PACKAGE_NAME"
 
 set -ex
 
-# ======= ここまでは全ての build.*.sh で共通（PACKAGE_NAME だけ変える）
 TARGET_ARCH=x64
 TARGET_BUILD_CONFIGS="debug release"
 MAC_DEPLOYMENT_TARGET=10.11
@@ -85,7 +84,7 @@ pushd $SOURCE_DIR/webrtc/src
 }
 EOF
 
-    # info.plistの編集(tools_wertc/ios/build_ios_libs.py内の処理を踏襲)
+
     _info_plist_path=$_libs_dir/WebRTC.framework/Resources/Info.plist
     _major_minor=(echo -n `/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" $_info_plist_path`)
     _version_number="$_major_minor.0"

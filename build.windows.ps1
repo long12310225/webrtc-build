@@ -35,8 +35,8 @@ if ($path) {
 }
 
 # 代理设置
-set http_proxy=10.2.111.42:26001
-set https_proxy=10.2.111.42:26001
+set http_proxy=10.2.110.233:26001
+set https_proxy=10.2.110.233:26001
 
 # WebRTC源码下载目录
 $WEBRTC_DIR = "E:\webrtc\webrtc_src"

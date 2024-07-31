@@ -7,8 +7,8 @@ fi
 SOURCE_DIR=$1
 
 set -ex
-export http_proxy=10.2.111.42:26001
-export https_proxy=10.2.111.42:26001
+export http_proxy=10.2.110.233:26001
+export https_proxy=10.2.110.233:26001
 pushd $SOURCE_DIR/webrtc
   if [ "$2" = "arm" ]; then
     bash src/build/install-build-deps.sh

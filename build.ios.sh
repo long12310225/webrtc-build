@@ -11,7 +11,6 @@ PACKAGE_DIR="`pwd`/_package/$PACKAGE_NAME"
 
 set -ex
 
-# ======= ここまでは全ての build.*.sh で共通（PACKAGE_NAME だけ変える）
 
 TARGET_ARCHS="arm64 x64"
 TARGET_BUILD_CONFIGS="debug release"
