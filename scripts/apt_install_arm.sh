@@ -1,13 +1,19 @@
 #!/bin/bash
 
 set -ex
-apt-get update
-apt-get -y upgrade
+
+# grub-efi-amd64-signed がエラーになるので hold で回避する
+# ref: https://github.com/community/community/discussions/47863
+apt-mark hold grub-efi-amd64-signed
+apt-get update --fix-missing
+apt-get upgrade
 
 # Ubuntu 18.04 では tzdata を noninteractive にしないと実行が止まってしまう
 apt-get -y install tzdata
-echo 'Asia/Shanghai' > /etc/timezone
+echo 'Asia/Tokyo' > /etc/timezone
 dpkg-reconfigure -f noninteractive tzdata
+
+export DEBIAN_FRONTEND=noninteractive
 
 apt-get -y install \
   build-essential \
@@ -17,12 +23,16 @@ apt-get -y install \
   lbzip2 \
   libgtk-3-dev \
   libstdc++6 \
+  locales \
   lsb-release \
   multistrap \
-  python \
+  ninja-build \
+  python3 \
+  python3-setuptools \
   rsync \
   software-properties-common \
   sudo \
+  unzip \
   vim \
   xz-utils
 
@@ -33,5 +43,5 @@ sed -e 's/Apt::Get::AllowUnauthenticated=true/Apt::Get::AllowUnauthenticated=tru
 # Ubuntu 18.04 では GLIBCXX_3.4.26 が無いためエラーになったので、
 # 新しい libstdc++6 のパッケージがある場所からインストールする
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
-apt update
+apt-get update
 apt-get install -y --only-upgrade libstdc++6
